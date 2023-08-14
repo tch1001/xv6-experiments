@@ -89,3 +89,19 @@ sys_uptime(void)
   release(&tickslock);
   return xticks;
 }
+
+uint64
+sys_cps(void)
+{
+  return cps();
+}
+
+uint64
+sys_chpr(void)
+{
+  int pid, priority;
+  argint(0, &pid);
+  argint(1, &priority);
+  return 0;
+  // return chpr(pid, priority);
+}

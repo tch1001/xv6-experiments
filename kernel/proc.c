@@ -122,7 +122,7 @@ allocproc(void)
   }
   return 0;
 
-found:
+found: // found an unused process
   p->pid = allocpid();
   p->state = USED;
 
@@ -462,6 +462,7 @@ scheduler(void)
         p->state = RUNNING;
         c->proc = p;
         swtch(&c->context, &p->context);
+        // printf("Process %p is running\n", p);
 
         // Process is done running for now.
         // It should have changed its p->state before coming back.
@@ -683,5 +684,43 @@ procdump(void)
       state = "???";
     printf("%d %s %s", p->pid, state, p->name);
     printf("\n");
+  }
+}
+
+// my own
+int 
+cps()
+{
+  struct proc *p;
+  intr_on();
+  for(p = proc; p < &proc[NPROC]; p++){
+    acquire(&p->lock);
+    if(p->state == SLEEPING)
+      printf("%d %s %s\n", p->pid, "sleeping", p->name);
+    else if(p->state == RUNNABLE)
+      printf("%d %s %s\n", p->pid, "runnable", p->name);
+    else if(p->state == RUNNING)
+      printf("%d %s %s\n", p->pid, "running", p->name);
+    else if(p->state == ZOMBIE)
+      printf("%d %s %s\n", p->pid, "zombie", p->name);
+    release(&p->lock);
+  }
+  return 22;
+}
+
+void
+chpr(int pid, int priority)
+{
+  struct proc *p;
+  int found = 0;
+  for(p = proc; p < &proc[NPROC]; p++){
+    acquire(&p->lock);
+    if(p->pid == pid){
+      // p->priority = priority;
+      found = 1;
+    }
+    release(&p->lock);
+    if(found)
+      break;
   }
 }
